@@ -26,6 +26,14 @@ output=$(env -u WAYLAND_DISPLAY "$ROOT/bin/omarchy-shell" omarchy.indicators ref
 [[ $output == "display=[wayland-1]" ]] || fail "shell ipc recovers a missing display" "$output"
 pass "shell ipc recovers a missing display"
 
+touch "$test_dir/run/wayland-9"
 output=$(WAYLAND_DISPLAY=wayland-9 "$ROOT/bin/omarchy-shell" omarchy.indicators refresh)
 [[ $output == "display=[wayland-9]" ]] || fail "shell ipc keeps an existing display" "$output"
 pass "shell ipc keeps an existing display"
+rm "$test_dir/run/wayland-9"
+
+# A second Hyprland session leaves its display in the systemd user environment
+# after it ends, and services started then must still reach the live shell.
+output=$(WAYLAND_DISPLAY=wayland-2 "$ROOT/bin/omarchy-shell" omarchy.indicators refresh)
+[[ $output == "display=[wayland-1]" ]] || fail "shell ipc recovers from a display whose socket is gone" "$output"
+pass "shell ipc recovers from a display whose socket is gone"
